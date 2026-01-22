@@ -10,6 +10,9 @@ function Navbar() {
         {/* Task 1: Add links to Home and Gifts */}
         <Link to="/">Home</Link>
         <Link to="/main">Gifts</Link>
+        <li className="nav-item">
+            <Link className="nav-link" to="/app/search">Search</Link>
+        </li>
       </div>
     </nav>
   );
