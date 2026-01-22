@@ -1,13 +1,19 @@
 const express = require("express");
 const app = express();
 
-// Task 1: import the giftRoutes and store in a constant called giftroutes
+// Existing gift routes
 const giftroutes = require("./routes/giftRoutes");
 
-// Middleware to parse JSON
+// Search API Task 1: import the searchRoutes
+const searchRoutes = require("./routes/searchRoutes");
+
+// Middleware
 app.use(express.json());
 
-// Task 2: add the giftRoutes to the server using app.use()
+// Existing gift route mount
 app.use("/api/gifts", giftroutes);
+
+// Search API Task 2: add the searchRoutes to the server
+app.use("/api/search", searchRoutes);
 
 module.exports = app;
