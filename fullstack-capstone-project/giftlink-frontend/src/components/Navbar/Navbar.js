@@ -1,21 +1,104 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import urlConfig from '../../config';
+import { useAppContext } from '../../context/AuthContext';
 
-function Navbar() {
-  return (
-    <nav className="navbar">
-      <h2>GiftLink</h2>
+export default function Navbar() {
+    const { isLoggedIn, setIsLoggedIn, userName, setUserName } = useAppContext();
+    const navigate = useNavigate();
 
-      <div className="nav-links">
-        {/* Task 1: Add links to Home and Gifts */}
-        <Link to="/">Home</Link>
-        <Link to="/main">Gifts</Link>
-        <li className="nav-item">
-            <Link className="nav-link" to="/app/search">Search</Link>
-        </li>
-      </div>
-    </nav>
-  );
+    useEffect(() => {
+        const authTokenFromSession = sessionStorage.getItem('authToken');
+        const nameFromSession = sessionStorage.getItem('userName');
+
+        if (authTokenFromSession) {
+            if (isLoggedIn && nameFromSession) {
+                setUserName(nameFromSession);
+            } else {
+                sessionStorage.removeItem('authToken');
+                sessionStorage.removeItem('userName');
+                sessionStorage.removeItem('userEmail');
+                setIsLoggedIn(false);
+            }
+        }
+    }, [isLoggedIn, setIsLoggedIn, setUserName]);
+
+    const handleLogout = () => {
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('userName');
+        sessionStorage.removeItem('userEmail');
+        setIsLoggedIn(false);
+        navigate(`/app`);
+    };
+
+    const profileSection = () => {
+        navigate(`/app/profile`);
+    };
+
+    return (
+        <nav className="navbar navbar-expand-lg navbar-light bg-light" id="navbar_container">
+            <a className="navbar-brand" href={`${urlConfig.backendUrl}/app`}>GiftLink</a>
+
+            <button
+                className="navbar-toggler"
+                type="button"
+                data-toggle="collapse"
+                data-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span className="navbar-toggler-icon"></span>
+            </button>
+
+            <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul className="navbar-nav">
+
+                    <li className="nav-item">
+                        <Link className="nav-link" to="/app">Gifts</Link>
+                    </li>
+
+                    <li className="nav-item">
+                        <Link className="nav-link" to="/app/search">Search</Link>
+                    </li>
+
+                    <ul className="navbar-nav ml-auto">
+                        {isLoggedIn ? (
+                            <>
+                                <li className="nav-item">
+                                    <span
+                                        className="nav-link"
+                                        style={{ color: "black", cursor: "pointer" }}
+                                        onClick={profileSection}
+                                    >
+                                        Welcome, {userName}
+                                    </span>
+                                </li>
+
+                                <li className="nav-item">
+                                    <button className="nav-link login-btn" onClick={handleLogout}>
+                                        Logout
+                                    </button>
+                                </li>
+                            </>
+                        ) : (
+                            <>
+                                <li className="nav-item">
+                                    <Link className="nav-link login-btn" to="/app/login">
+                                        Login
+                                    </Link>
+                                </li>
+
+                                <li className="nav-item">
+                                    <Link className="nav-link register-btn" to="/app/register">
+                                        Register
+                                    </Link>
+                                </li>
+                            </>
+                        )}
+                    </ul>
+                </ul>
+            </div>
+        </nav>
+    );
 }
-
-export default Navbar;
