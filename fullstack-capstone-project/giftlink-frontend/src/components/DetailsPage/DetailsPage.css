@@ -1,0 +1,84 @@
+/* Style for image placeholder */
+.image-placeholder-large {
+    width: 100%;
+    height: 350px;              /* Task 1: larger display */
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* Style for product image */
+.product-image-large {
+    width: 100%;
+    height: 350px;              /* Task 2: fits container */
+    object-fit: cover;          /* Ensures proper scaling */
+    border-radius: 8px;
+}
+
+/* Style for 'no image available' placeholder */
+.no-image-available-large {
+    width: 100%;
+    height: 350px;              /* Task 3: consistent size */
+    background-color: #e6e6e6;
+    border: 2px dashed #bbb;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 16px;
+    font-style: italic;
+}
+
+/* Style for card header */
+.card-header {
+    background-color: #4a90e2;  /* Task 4: match theme */
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px 6px 0 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Style for details title */
+.details-title {
+    font-size: 26px;            /* Task 5: visibility */
+    font-weight: 700;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333;
+    text-align: center;
+}
+
+/* Style for comments section */
+.comments-section {
+    margin-top: 30px;           /* Task 6: readability */
+    padding: 15px;
+    background: #fafafa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.comments-section h4 {
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.comments-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.comments-section li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.comments-section li:last-child {
+    border-bottom: none;
+}
