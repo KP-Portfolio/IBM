@@ -6,6 +6,7 @@ import RegisterPage from './components/RegisterPage/RegisterPage';
 import Navbar from './components/Navbar/Navbar';
 import DetailsPage from './components/DetailsPage/DetailsPage';
 import SearchPage from './components/SearchPage/SearchPage';
+import Profile from './components/Profile';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -34,6 +35,9 @@ function App() {
 
         {/* Search */}
         <Route path="/app/search" element={<SearchPage/>} />
+
+        {/* Profile */}
+        <Route path="/app/profile" element={<Profile />} />
       </Routes>
     </>
   );
