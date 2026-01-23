@@ -1,27 +1,21 @@
-//Step 1 - Task 2: Import necessary packages
 const express = require('express');
 const router = express.Router();
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const pino = require('pino');
-
-//Step 1 - Task 3: Create a Pino logger instance
 const logger = pino({ level: 'info' });
+const { body, validationResult } = require("express-validator");
+const bcryptjs = require("bcryptjs");
 
 dotenv.config();
 
-//Step 1 - Task 4: Create JWT secret
 const JWT_SECRET = process.env.JWT_SECRET;
 
 router.post('/register', async (req, res) => {
     try {
-        // Task 1: Connect to `giftsdb` in MongoDB through `connectToDatabase` in `db.js`
         const db = await connectToDatabase();
-
-        // Task 2: Access MongoDB collection
         const usersCollection = db.collection('users');
 
-        // Task 3: Check for existing email
         const existingUser = await usersCollection.findOne({ email: req.body.email });
         if (existingUser) {
             return res.status(400).json({ message: 'Email already exists' });
@@ -31,7 +25,6 @@ router.post('/register', async (req, res) => {
         const hash = await bcryptjs.hash(req.body.password, salt);
         const email = req.body.email;
 
-        // Task 4: Save user details in database
         const newUser = {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
@@ -42,7 +35,6 @@ router.post('/register', async (req, res) => {
 
         const result = await usersCollection.insertOne(newUser);
 
-        // Task 5: Create JWT authentication with user._id as payload
         const authtoken = jwt.sign(
             { userId: result.insertedId },
             JWT_SECRET,
@@ -60,31 +52,20 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     try {
-        // Task 1: Connect to giftsdb in MongoDB
         const db = await connectToDatabase();
-
-        // Task 2: Access MongoDB users collection
         const usersCollection = db.collection('users');
-
         const { email, password } = req.body;
 
-        // Task 3: Check for user credentials in database
         const user = await usersCollection.findOne({ email });
 
-        // Task 7: Send appropriate message if user not found
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
         }
-
-        // Task 4: Compare entered password with stored encrypted password
         const isMatch = await bcryptjs.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid password' });
         }
 
-        // Task 5: Fetch user details (already in `user`)
-
-        // Task 6: Create JWT authentication with user._id as payload
         const authtoken = jwt.sign(
             { userId: user._id },
             JWT_SECRET,
@@ -104,5 +85,81 @@ router.post('/login', async (req, res) => {
         return res.status(500).send('Internal server error');
     }
 });
+
+router.post(
+  "/update",
+  [
+    body("firstName")
+      .optional()
+      .isString()
+      .withMessage("First name must be a string"),
+
+    body("lastName")
+      .optional()
+      .isString()
+      .withMessage("Last name must be a string"),
+
+    body("password")
+      .optional()
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters")
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: "Invalid input",
+          errors: errors.array()
+        });
+      }
+
+      const email = req.headers.email;
+      if (!email) {
+        return res.status(400).json({ message: "Email header is required" });
+      }
+
+      const db = await connectToDatabase();
+      const usersCollection = db.collection("users");
+
+      const user = await usersCollection.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const updateFields = {};
+      if (req.body.firstName) updateFields.firstName = req.body.firstName;
+      if (req.body.lastName) updateFields.lastName = req.body.lastName;
+
+      if (req.body.password) {
+        const salt = await bcryptjs.genSalt(10);
+        const hash = await bcryptjs.hash(req.body.password, salt);
+        updateFields.password = hash;
+      }
+
+      await usersCollection.updateOne(
+        { email },
+        { $set: updateFields }
+      );
+
+      const authtoken = jwt.sign(
+        { userId: user._id },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      logger.info("User profile updated successfully");
+
+      res.json({
+        message: "Profile updated successfully",
+        authtoken
+      });
+
+    } catch (e) {
+      logger.error(e);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 
 module.exports = router;
