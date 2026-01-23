@@ -58,4 +58,51 @@ router.post('/register', async (req, res) => {
     }
 });
 
+router.post('/login', async (req, res) => {
+    try {
+        // Task 1: Connect to giftsdb in MongoDB
+        const db = await connectToDatabase();
+
+        // Task 2: Access MongoDB users collection
+        const usersCollection = db.collection('users');
+
+        const { email, password } = req.body;
+
+        // Task 3: Check for user credentials in database
+        const user = await usersCollection.findOne({ email });
+
+        // Task 7: Send appropriate message if user not found
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        // Task 4: Compare entered password with stored encrypted password
+        const isMatch = await bcryptjs.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid password' });
+        }
+
+        // Task 5: Fetch user details (already in `user`)
+
+        // Task 6: Create JWT authentication with user._id as payload
+        const authtoken = jwt.sign(
+            { userId: user._id },
+            JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        logger.info('User logged in successfully');
+        res.json({
+            authtoken,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName
+        });
+
+    } catch (e) {
+        logger.error(e);
+        return res.status(500).send('Internal server error');
+    }
+});
+
 module.exports = router;
