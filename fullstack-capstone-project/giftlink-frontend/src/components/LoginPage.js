@@ -1,16 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LoginPage.css';
+import urlConfig from '../config';
+import { useAppContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
-
-    // Task: Create state variables
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const navigate = useNavigate();
+    const { setIsLoggedIn } = useAppContext();
+    const bearerToken = sessionStorage.getItem("bearerToken");
 
-    // Task: Create handleLogin function
-    const handleLogin = () => {
-        console.log("Login clicked");
-        console.log({ email, password });
+    useEffect(() => {
+        if (bearerToken) {
+            navigate("/app/main");
+        }
+    }, [bearerToken, navigate]);
+
+    const handleLogin = async () => {
+        try {
+            const response = await fetch(`${urlConfig.backendUrl}/api/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email,
+                    password
+                })
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                setErrorMessage(data.message || "Incorrect email or password");
+                setPassword(""); // clear password field
+                return;
+            }
+
+            sessionStorage.setItem("bearerToken", data.authtoken);
+            sessionStorage.setItem("email", data.email);
+            sessionStorage.setItem("firstName", data.firstName);
+            sessionStorage.setItem("lastName", data.lastName);
+
+            setIsLoggedIn(true);
+            navigate("/app/main");
+
+        } catch (err) {
+            console.log("Login error:", err.message);
+            setErrorMessage("Something went wrong. Please try again.");
+        }
     };
 
     return (
@@ -41,6 +80,11 @@ function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+
+              {/* Error message */}
+              {errorMessage && (
+                <p className="text-danger text-center">{errorMessage}</p>
+              )}
 
               {/* Login button */}
               <button
